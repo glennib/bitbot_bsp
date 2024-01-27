@@ -5,7 +5,7 @@ pub use ultrasonic::*;
 pub use wheels::*;
 
 mod wheels {
-    use microbit_bsp::embassy_nrf::{
+    use embassy_nrf::{
         peripherals::{P0_01, P0_10, P0_12, P1_02, PWM0},
         pwm::{Prescaler, SimplePwm},
     };
@@ -55,11 +55,11 @@ mod ultrasonic {
     use core::ops::{Div, Mul};
     use defmt::Format;
     use embassy_futures::select::{select, Either};
-    use embassy_time::{Duration, Instant, Timer};
-    use microbit_bsp::embassy_nrf::{
+    use embassy_nrf::{
         gpio::{Input, Level, Output, OutputDrive, Pin, Pull},
         peripherals::P0_13,
     };
+    use embassy_time::{Duration, Instant, Timer};
 
     pub struct Ultrasonic {
         pin: P0_13,
@@ -209,8 +209,8 @@ mod ultrasonic {
 
 mod light_sensors {
     use defmt::Format;
-    use microbit_bsp::embassy_nrf::{
-        bind_interrupts,
+    use embassy_nrf::{
+        interrupt,
         peripherals::{P0_03, P0_04, SAADC},
         saadc::{ChannelConfig, Config, InterruptHandler, Saadc},
     };
@@ -226,14 +226,17 @@ mod light_sensors {
     }
 
     impl LightSensors {
-        pub async fn new(saadc: SAADC, p1: P0_03, p2: P0_04) -> Self {
-            bind_interrupts!(struct Irq{
-                SAADC => InterruptHandler;
-            });
+        pub async fn new(
+            saadc: SAADC,
+            p1: P0_03,
+            p2: P0_04,
+            irq: impl interrupt::typelevel::Binding<interrupt::typelevel::SAADC, InterruptHandler>
+                + 'static,
+        ) -> Self {
             let config = Config::default();
             let right = ChannelConfig::single_ended(p1);
             let left = ChannelConfig::single_ended(p2);
-            let adc = Saadc::new(saadc, Irq {}, config, [right, left]);
+            let adc = Saadc::new(saadc, irq, config, [right, left]);
             adc.calibrate().await;
             Self { adc }
         }

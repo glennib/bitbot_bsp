@@ -5,10 +5,10 @@ use bitbot_bsp::{LightSensors, Ultrasonic, Wheels};
 use defmt::info;
 use embassy_executor::Spawner;
 use embassy_time::Timer;
+use embassy_nrf::{bind_interrupts, saadc};
 use microbit_bsp::Microbit;
 #[allow(unused_imports)]
 use {defmt_rtt as _, panic_probe as _};
-
 
 fn map_speed(ideal: i8) -> i8 {
     const MIN: i16 = 20;
@@ -39,8 +39,12 @@ async fn main(#[allow(unused_variables)] s: Spawner) {
     let mut wheels = Wheels::new(board.pwm0, board.p8, board.p12, board.p14, board.p16);
 
     let mut sonar = Ultrasonic::new(board.p15);
+    bind_interrupts!(struct Irq{
+        SAADC => saadc::InterruptHandler;
+    });
+    let irq = Irq {};
 
-    let mut light_sensors = LightSensors::new(board.saadc, board.p1, board.p2).await;
+    let mut light_sensors = LightSensors::new(board.saadc, board.p1, board.p2, irq).await;
 
     loop {
         let light = light_sensors.read().await;
