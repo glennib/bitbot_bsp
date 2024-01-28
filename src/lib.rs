@@ -6,18 +6,26 @@ pub use wheels::*;
 
 mod wheels {
     use embassy_nrf::{
-        peripherals::{P0_01, P0_10, P0_12, P1_02, PWM0},
-        pwm::{Prescaler, SimplePwm},
+        peripherals::{P0_01, P0_10, P0_12, P1_02},
+        pwm::{Instance, Prescaler, SimplePwm},
+        Peripheral,
     };
 
-    pub struct Wheels {
-        pwm: SimplePwm<'static, PWM0>,
+    pub struct Wheels<T: Instance> {
+        pwm: SimplePwm<'static, T>,
     }
 
-    impl Wheels {
+    impl<T: Instance> Wheels<T> {
         pub const MAX_SPEED: i8 = 100;
         const MAX_DUTY: u16 = 0x7FFF;
-        pub fn new(pwm: PWM0, p8: P0_10, p12: P0_12, p14: P0_01, p16: P1_02) -> Self {
+        #[must_use]
+        pub fn new(
+            pwm: impl Peripheral<P = T> + 'static,
+            p8: P0_10,
+            p12: P0_12,
+            p14: P0_01,
+            p16: P1_02,
+        ) -> Self {
             let pwm = SimplePwm::new_4ch(pwm, p8, p16, p12, p14);
 
             pwm.set_max_duty(Self::MAX_DUTY);
