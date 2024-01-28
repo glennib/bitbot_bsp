@@ -77,34 +77,44 @@ mod ultrasonic {
     pub struct Micrometers(pub u32);
 
     impl Micrometers {
+        #[must_use]
         pub const fn as_millimeters(self) -> u32 {
             self.0 / 1_000
         }
+        #[must_use]
         pub const fn as_centimeters(self) -> u32 {
             self.0 / 10_000
         }
+        #[must_use]
         pub const fn as_decimeters(self) -> u32 {
             self.0 / 100_000
         }
+        #[must_use]
         pub const fn as_meters(self) -> u32 {
             self.0 / 1_000_000
         }
+        #[must_use]
         pub const fn from_millimeters(d: u32) -> Self {
             Self(d * 1_000)
         }
+        #[must_use]
         pub const fn from_centimeters(d: u32) -> Self {
             Self(d * 10_000)
         }
+        #[must_use]
         pub const fn from_decimeters(d: u32) -> Self {
             Self(d * 100_000)
         }
+        #[must_use]
         pub const fn from_meters(d: u32) -> Self {
             Self(d * 1_000_000)
         }
+        #[must_use]
         pub const fn from_duration(d: Duration, speed_mps: u32) -> Self {
             #[allow(clippy::cast_possible_truncation)]
             Self(speed_mps * (d.as_micros() as u32))
         }
+        #[must_use]
         pub const fn into_duration(self, speed_mps: u32) -> Duration {
             Duration::from_micros((self.0 as u64) / (speed_mps as u64))
         }
@@ -134,6 +144,7 @@ mod ultrasonic {
         //     Micrometers(Self::MIN_DISTANCE.0 * 2).into_duration(Self::SPEED_OF_SOUND_MPS);
         const MAX_DURATION: Duration =
             Micrometers(Self::MAX_DISTANCE.0 * 2).into_duration(Self::SPEED_OF_SOUND_MPS);
+        #[must_use]
         pub fn new(p15: P0_13) -> Self {
             Self { pin: p15 }
         }
