@@ -259,3 +259,20 @@ mod light_sensors {
         }
     }
 }
+
+pub mod buzzer {
+    use embassy_nrf::{
+        peripherals::P0_02,
+        pwm::{Instance, SimplePwm},
+        Peripheral,
+    };
+    use microbit_bsp::speaker::PwmSpeaker;
+
+    pub fn new<T: Instance>(
+        pwm: impl Peripheral<P = T> + 'static,
+        p0: P0_02,
+    ) -> PwmSpeaker<'static, T> {
+        let pwm = SimplePwm::new_1ch(pwm, p0);
+        PwmSpeaker::new(pwm)
+    }
+}
